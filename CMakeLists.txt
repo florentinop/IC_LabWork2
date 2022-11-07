@@ -28,3 +28,5 @@ target_link_libraries(rotate ${OpenCV_LIBS})
 
 add_executable (changeIntensity changeIntensity.cpp)
 target_link_libraries(changeIntensity ${OpenCV_LIBS})
+
+add_executable (golomb Golomb.cpp)
