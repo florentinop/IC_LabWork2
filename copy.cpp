@@ -23,7 +23,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    imwrite(path, img);
+    Mat cpy_img(img.rows,img.cols,img.type());
+    
+    //Copy img to cpy_img pixel by pixel
+    for (size_t r = 0; r < (size_t)img.rows; r++){
+        for (size_t c = 0; c < (size_t)img.cols; c++){
+            cpy_img.at<Vec3b>(r,c) = img.at<Vec3b>(r,c);
+        }
+    }
+
+    imwrite(path, cpy_img);
 
     return 0;
 }
