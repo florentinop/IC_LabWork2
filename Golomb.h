@@ -23,27 +23,41 @@ public:
     }
 
     string encode(int n) {
-        int q = n / m;
-        int r = n % m;
-        string unaryCode = "";
+        int q = abs(n) / m;
+        int r = abs(n) % m;
+        string unaryCode;
         for (int i = 0; i < q; i++) {
             unaryCode += '0';
         }
         unaryCode += '1';
-        string binaryCode = "";
-        int logm = (int) log2(m);
-        if (r >= pow(2, logm + 1) - m) {
-            binaryCode += bitset<32>(r + pow(2, logm + 1) - m).to_string();
-            binaryCode = binaryCode.substr(binaryCode.size() - logm - 1, binaryCode.size());
-        } else {
+        string binaryCode;
+        int b = (int) log2(m) + 1;
+        if (r <= pow(2, b) - m) {
             binaryCode += bitset<32>(r).to_string();
-            binaryCode = binaryCode.substr(binaryCode.size() - logm, binaryCode.size());
+            binaryCode = binaryCode.substr(binaryCode.size() - b + 1, binaryCode.size());
+        } else {
+            binaryCode += bitset<32>(r + (int) pow(2, b) - m).to_string();
+            binaryCode = binaryCode.substr(binaryCode.size() - b, binaryCode.size());
         }
         return unaryCode + binaryCode;
     }
 
-    int decode(string s) {
-        return 0;
+    int decode(const string& s) {
+        int q = 0;
+        for (auto &c: s) {
+            if (c == '0') {
+                q += 1;
+            } else {
+                break;
+            }
+        }
+        string binaryCode = s.substr(q + 1, s.size());
+        int r = stoi(binaryCode, nullptr, 2);
+        int b = (int) log2(m) + 1;
+        if ((int) binaryCode.size() > b - 1) {
+            r -= (int) pow(2, b) - m;
+        }
+        return q * m + r;
     }
 };
 
