@@ -30,3 +30,6 @@ add_executable (changeIntensity changeIntensity.cpp)
 target_link_libraries(changeIntensity ${OpenCV_LIBS})
 
 add_executable (golomb Golomb.cpp)
+
+add_executable(losslessAudioCodec LosslessAudioCodec.cpp)
+target_link_libraries (losslessAudioCodec sndfile)

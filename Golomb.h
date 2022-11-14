@@ -51,15 +51,19 @@ public:
                 break;
             }
         }
-        string binaryCode = s.substr(q + 1, s.size());
-        int r = stoi(binaryCode, nullptr, 2);
-        int b = (int) log2(m) + 1;
-        if ((int) binaryCode.size() > b - 1) {
-            r -= (int) pow(2, b) - m;
+        int b = (int) log2(m);
+        string bBits = s.substr(q + 1, b);
+        int rPrime = stoi(bBits, nullptr, 2);
+        int r = 0;
+        if (rPrime < pow(2, b + 1) - m) {
+            r = rPrime;
+        } else {
+            string bBitsPlusOne = s.substr(q + 1, b + 1);
+            rPrime = stoi(bBitsPlusOne, nullptr, 2);
+            r = rPrime - (int) pow(2, b + 1) + m;
         }
         return q * m + r;
     }
 };
-
 
 #endif //IC_GOLOMB_H
