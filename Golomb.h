@@ -32,7 +32,7 @@ public:
         unaryCode += '1';
         string binaryCode;
         int b = (int) log2(m) + 1;
-        if (r <= pow(2, b) - m) {
+        if (r < pow(2, b) - m) {
             binaryCode += bitset<32>(r).to_string();
             binaryCode = binaryCode.substr(binaryCode.size() - b + 1, binaryCode.size());
         } else {
