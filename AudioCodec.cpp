@@ -2,8 +2,9 @@
 // Created by diogo on 14/11/22.
 //
 
-#include "LosslessAudioCodec.h"
+#include "AudioCodec.h"
 #include "Golomb.h"
+#include "BitStream.h"
 
 #include <iostream>
 #include <vector>
@@ -17,7 +18,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     if(argc < 3) {
-        cerr << "Usage: " << argv[0] << " <input file> <Golomb parameter (m)>\n";
+        cerr << "Usage: " << argv[0] << " <input file> <output file>\n";
         return 1;
     }
 
@@ -47,17 +48,16 @@ int main(int argc, char* argv[]) {
         temp.insert(temp.end(), samples.begin(), samples.end());
     }
 
-    LosslessAudioCodec codec { temp, sndFile.channels()};
+    AudioCodec codec {temp, sndFile.channels()};
     vector<int> residuals = codec.calculateResiduals();
     int max = *max_element(residuals.begin(), residuals.end());
     int m = (int) (max / log2(max));
     Golomb golomb {m};
-    string golombCoding;
-    for (auto res: residuals) {
-        golombCoding += golomb.encode(res);
+    string encoding;
+    for (auto residual: residuals) {
+        encoding += golomb.encode(residual);
     }
-    cout << residuals[1] << endl;
-    cout << "Encoding: " << golomb.encode(residuals[1]) << endl;
-    cout << "Decoding: " << golomb.decode(golomb.encode(residuals[1])) << endl;
+    BitStream writeStream {argv[2]};
+    writeStream.writeBits(encoding);
     return 0;
 }
