@@ -1,0 +1,11 @@
+To build:
+	make
+
+To test:
+	part2-bin/golomb -e 6 20 // encodes the golomb code for m=6, n=20
+	part2-bin/golomb -d 6 0001110 // decodes 0001110 and prints its corresponding n (for m=6)
+	part2-bin/audioCodec sample.wav new.wav // 
+
+
+To clean:
+	make clean													

@@ -1,0 +1,12 @@
+To build:
+	make
+
+To test:
+	part1-bin/copy images/tulips.ppm cpy.ppm 			 // copies image "tulips.ppm" to "cpy.ppm"
+	part1-bin/negative images/tulips.ppm neg.ppm			 // creates a negative version of "tulips.ppm" and saves it to "neg.ppm"
+	part1-bin/mirror -v images/tulips.ppm mirrored.ppm 		 // mirrors image "tulips.ppm" vertically to "mirrored.ppm"
+	part1-bin/rotate 270 images/tulips.ppm rot.ppm 		 // rotates image "tulips.ppm" 270º and saves it to "rot.ppm"
+	part1-bin/changeIntensity -50 images/tulips.ppm reducedInt.ppm // reduces light intensity of image "tulips.ppm" (setting beta to -50) and saves it to "reducedInt.ppm"	
+
+To clean:
+	make clean													

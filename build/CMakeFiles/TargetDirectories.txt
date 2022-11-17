@@ -1,7 +1,0 @@
-/home/diogo/ua/IC/02/build/CMakeFiles/rebuild_cache.dir
-/home/diogo/ua/IC/02/build/CMakeFiles/edit_cache.dir
-/home/diogo/ua/IC/02/build/CMakeFiles/changeIntensity.dir
-/home/diogo/ua/IC/02/build/CMakeFiles/rotate.dir
-/home/diogo/ua/IC/02/build/CMakeFiles/negative.dir
-/home/diogo/ua/IC/02/build/CMakeFiles/mirror.dir
-/home/diogo/ua/IC/02/build/CMakeFiles/copy.dir
