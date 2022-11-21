@@ -7,89 +7,110 @@
 
 #include <utility>
 #include <vector>
+#include <string>
+#include <algorithm>
+#include <sndfile.hh>
+#include "Golomb.h"
+#include "BitStream.h"
 
 using namespace std;
 
 class AudioCodec {
 private:
-    vector<short> samples;
-    int channels;
+    string path;
 
 public:
-    AudioCodec(vector<short> samples, int channels) {
-        this->samples = std::move(samples);
-        this->channels = channels;
+    explicit AudioCodec(string path) {
+        this->path = std::move(path);
     }
 
-    vector<int> calculateResiduals() {
-        vector<int> res(2 * samples.size(), 0);
+    void losslessEncode(vector<short> samples, int channels) {
+        vector<int> res(samples.size(), 0);
         if (channels == 1) {
-            int posIdx = 0;
-            int negIdx = 1;
             for (unsigned int i = 1; i < samples.size(); i++) {
-                int residual = samples[i] - samples[i-1];
-                if (residual >= 0) {
-                    res[posIdx] = residual;
-                    posIdx += 2;
-                } else {
-                    res[negIdx] = -residual;
-                    negIdx += 2;
-                }
+                res[i] = samples[i] - samples[i-1];
             }
         } else {
-            int posIdxCh1 = 0;
-            int negIdxCh1 = 2;
-            int posIdxCh2 = 1;
-            int negIdxCh2 = 3;
             // Channel 1
-            int residual = samples[1] / 2;
-            if (residual >= 0) {
-                res[0] = residual;
-                posIdxCh1 += 4;
-            } else {
-                res[2] = -residual;
-                negIdxCh1 += 4;
-            }
+            res[0] = samples[1] / 2;
             // Channel 2
-            residual = samples[0] / 2;
-            if (residual >= 0) {
-                res[1] = residual;
-                posIdxCh2 += 4;
-            } else {
-                res[3] = -residual;
-                negIdxCh2 += 4;
-            }
+            res[1] = samples[0] / 2;
             for (unsigned int i = 2; i < samples.size(); i++) {
                 if ((i % 2) == 0) {
-                    residual = (samples[i - 2] + samples[i + 1]) / 2;
-                    if (residual >= 0) {
-                        res[posIdxCh1] = residual;
-                        posIdxCh1 += 4;
-                    } else {
-                        res[negIdxCh1] = -residual;
-                        negIdxCh1 += 4;
-                    }
+                    res[i] = (samples[i - 2] + samples[i + 1]) / 2;
                 } else {
-                    residual = (samples[i - 2] + samples[i - 1]) / 2;
-                    if (residual >= 0) {
-                        res[posIdxCh2] = residual;
-                        posIdxCh2 += 4;
-                    } else {
-                        res[negIdxCh2] = -residual;
-                        negIdxCh2 += 4;
-                    }
+                    res[i] = (samples[i - 2] + samples[i - 1]) / 2;
                 }
             }
         }
-        unsigned long endIdx = res.size();
-        for (unsigned int i = 0; i < res.size(); i++) {
-            if (res[res.size() - 1 - i] != 0) {
-                endIdx = i;
-                break;
+        int max = *max_element(res.begin(), res.end());
+        int m = (int) (max / log2(max));
+        Golomb golomb {m};
+        BitStream writeStream {path};
+        writeStream.writeBits(channels == 2 ? "1" : "0");
+        writeStream.writeBits(bitset<15>(m).to_string());
+        for (auto re: res) {
+            writeStream.writeBits(golomb.encode(re));
+        }
+    }
+
+    void lossyEncode(vector<short> samples, int channels) {
+        std::vector<short> res(samples.size());
+        int delta = 256;
+        for (unsigned long i = 0; i < samples.size(); i++) {
+            if (samples[i] % delta >= delta / 2) {
+                res[i] = delta * (1 + samples[i] / delta);
+                res[i] >>= 8;
+            } else {
+                res[i] = samples[i] - (samples[i] % delta);
+                res[i] >>= 8;
             }
         }
-        res.resize(res.size() - endIdx);
-        return res;
+        BitStream writeStream {path};
+        writeStream.writeBits(channels == 2 ? "1" : "0");
+        writeStream.writeBits("000000000000000");
+        for (auto re: res) {
+            writeStream.writeBits(bitset<8>(re).to_string());
+        }
+    }
+
+    void decode(const string& outPath) {
+        BitStream readStream {path};
+        int channels = (readStream.readBit() == '1' ? 2 : 1);
+        int m = stoi(readStream.readBits(15), nullptr, 2);
+        if (m == 0) {
+            string s;
+            vector<short> res;
+            while ((s = readStream.readBits(8)).size() >= 8) {
+                res.push_back((short) (stoi(s, nullptr, 2) << 8));
+            }
+            SndfileHandle outFile {outPath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, 44100};
+            outFile.write(res.data(), (long) res.size());
+        } else {
+            Golomb golomb {m};
+            string decoding;
+            string readBits;
+            vector<short> res;
+            unsigned int lengthToRead = m + (int) log2(m) + 2;
+            int idx = 0;
+            while ((readBits = readStream.readBits(lengthToRead)).size() >= lengthToRead) {
+                decoding += readBits;
+                res.push_back((short) golomb.decode(readBits, idx));
+                decoding = readBits.substr(idx, readBits.size() - idx);
+            }
+            decoding += readBits;
+            while (!decoding.empty()) {
+                res.push_back((short) golomb.decode(readBits, idx));
+                decoding = readBits.substr(idx, readBits.size() - idx);
+            }
+            if (channels == 1) {
+                for (unsigned long i = 1; i < res.size(); i++) {
+                    res[i] = res[i] + res[i-1];
+                }
+            }
+            SndfileHandle outFile {outPath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, 44100};
+            outFile.write(res.data(), (long) res.size());
+        }
     }
 };
 

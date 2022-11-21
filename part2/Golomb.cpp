@@ -27,7 +27,9 @@ int main(int argc, char* argv[]) {
     if (encode) {
         cout << golomb.encode(atoi(argv[argc-1])) << endl;
     } else {
-        cout << golomb.decode(string(argv[argc-1])) << endl;
+        int sLength = 0;
+        int& sLengthRef = sLength;
+        cout << golomb.decode(string(argv[argc-1]), sLengthRef) << endl;
     }
 
     return 0;

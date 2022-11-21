@@ -13,7 +13,7 @@ using namespace std;
 
 class Golomb {
 private:
-    int m;
+    int m = 0;
 
 public:
     Golomb(int m) {
@@ -39,10 +39,13 @@ public:
             binaryCode += bitset<32>(r + (int) pow(2, b) - m).to_string();
             binaryCode = binaryCode.substr(binaryCode.size() - b, binaryCode.size());
         }
-        return unaryCode + binaryCode;
+        if (n == 0) {
+            return unaryCode + binaryCode;
+        }
+        return unaryCode + binaryCode + (n > 0 ? '0' : '1');
     }
 
-    int decode(const string& s) {
+    int decode(const string& s, int& sLength) {
         int q = 0;
         for (auto &c: s) {
             if (c == '0') {
@@ -51,18 +54,27 @@ public:
                 break;
             }
         }
+        sLength = q + 1;
         int b = (int) log2(m);
         string bBits = s.substr(q + 1, b);
         int rPrime = stoi(bBits, nullptr, 2);
         int r = 0;
         if (rPrime < pow(2, b + 1) - m) {
             r = rPrime;
+            sLength += b;
         } else {
             string bBitsPlusOne = s.substr(q + 1, b + 1);
             rPrime = stoi(bBitsPlusOne, nullptr, 2);
             r = rPrime - (int) pow(2, b + 1) + m;
+            sLength += b + 1;
         }
-        return q * m + r;
+        int value = q * m + r;
+        if (value == 0) {
+            return value;
+        }
+        string signBit = s.substr(q + b + 2, 1);
+        sLength += 1;
+        return value * (signBit == "0" ? 1 : -1);
     }
 };
 
