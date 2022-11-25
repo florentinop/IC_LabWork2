@@ -24,29 +24,11 @@ public:
         this->path = std::move(path);
     }
 
-    vector<short> losslessEncode(vector<short> samples, int channels) {
+    void losslessEncode(vector<short> samples, int channels) {
         vector<short> res(samples.size(), 0);
         for (unsigned int i = 1; i < samples.size(); i++) {
             res[i] = samples[i] - samples[i - 1];
         }
-//        if (channels == 1) {
-//            res[0] = samples[0];
-//            for (unsigned int i = 1; i < samples.size(); i++) {
-//                res[i] = samples[i] - samples[i - 1];
-//            }
-//        } else {
-//            // Channel 1
-//            res[0] = samples[0];
-//            // Channel 2
-//            res[1] = samples[1];
-//            for (unsigned int i = 2; i < samples.size(); i++) {
-//                if ((i % 2) == 0) {
-//                    res[i] = (samples[i - 2] + samples[i + 1]) / 2;
-//                } else {
-//                    res[i] = (samples[i - 2] + samples[i - 1]) / 2;
-//                }
-//            }
-//        }
         int max = *max_element(res.begin(), res.end());
         int m = (int) (max / log2(max));
         Golomb golomb {m};
@@ -56,7 +38,6 @@ public:
         for (auto re: res) {
             writeStream.writeBits(golomb.encode(re));
         }
-        return res;
     }
 
     void lossyEncode(vector<short> samples, int channels) {
