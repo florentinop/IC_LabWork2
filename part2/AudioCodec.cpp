@@ -3,7 +3,6 @@
 //
 
 #include "AudioCodec.h"
-#include "BitStream.h"
 
 #include <iostream>
 #include <vector>

@@ -24,25 +24,29 @@ public:
         this->path = std::move(path);
     }
 
-    void losslessEncode(vector<short> samples, int channels) {
-        vector<int> res(samples.size(), 0);
-        if (channels == 1) {
-            for (unsigned int i = 1; i < samples.size(); i++) {
-                res[i] = samples[i] - samples[i-1];
-            }
-        } else {
-            // Channel 1
-            res[0] = samples[1] / 2;
-            // Channel 2
-            res[1] = samples[0] / 2;
-            for (unsigned int i = 2; i < samples.size(); i++) {
-                if ((i % 2) == 0) {
-                    res[i] = (samples[i - 2] + samples[i + 1]) / 2;
-                } else {
-                    res[i] = (samples[i - 2] + samples[i - 1]) / 2;
-                }
-            }
+    vector<short> losslessEncode(vector<short> samples, int channels) {
+        vector<short> res(samples.size(), 0);
+        for (unsigned int i = 1; i < samples.size(); i++) {
+            res[i] = samples[i] - samples[i - 1];
         }
+//        if (channels == 1) {
+//            res[0] = samples[0];
+//            for (unsigned int i = 1; i < samples.size(); i++) {
+//                res[i] = samples[i] - samples[i - 1];
+//            }
+//        } else {
+//            // Channel 1
+//            res[0] = samples[0];
+//            // Channel 2
+//            res[1] = samples[1];
+//            for (unsigned int i = 2; i < samples.size(); i++) {
+//                if ((i % 2) == 0) {
+//                    res[i] = (samples[i - 2] + samples[i + 1]) / 2;
+//                } else {
+//                    res[i] = (samples[i - 2] + samples[i - 1]) / 2;
+//                }
+//            }
+//        }
         int max = *max_element(res.begin(), res.end());
         int m = (int) (max / log2(max));
         Golomb golomb {m};
@@ -52,6 +56,7 @@ public:
         for (auto re: res) {
             writeStream.writeBits(golomb.encode(re));
         }
+        return res;
     }
 
     void lossyEncode(vector<short> samples, int channels) {
@@ -78,38 +83,40 @@ public:
         BitStream readStream {path};
         int channels = (readStream.readBit() == '1' ? 2 : 1);
         int m = stoi(readStream.readBits(15), nullptr, 2);
+        vector<short> res;
         if (m == 0) {
+            // Lossy encoding
             string s;
-            vector<short> res;
             while ((s = readStream.readBits(8)).size() >= 8) {
                 res.push_back((short) (stoi(s, nullptr, 2) << 8));
             }
             SndfileHandle outFile {outPath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, 44100};
             outFile.write(res.data(), (long) res.size());
         } else {
+            // Lossless decoding
             Golomb golomb {m};
             string decoding;
-            string readBits;
-            vector<short> res;
-            unsigned int lengthToRead = m + (int) log2(m) + 2;
+            unsigned int lengthToRead = 1024;
             int idx = 0;
-            while ((readBits = readStream.readBits(lengthToRead)).size() >= lengthToRead) {
-                decoding += readBits;
-                res.push_back((short) golomb.decode(readBits, idx));
-                decoding = readBits.substr(idx, readBits.size() - idx);
-            }
-            decoding += readBits;
-            while (!decoding.empty()) {
-                res.push_back((short) golomb.decode(readBits, idx));
-                decoding = readBits.substr(idx, readBits.size() - idx);
-            }
-            if (channels == 1) {
-                for (unsigned long i = 1; i < res.size(); i++) {
-                    res[i] = res[i] + res[i-1];
+            decoding = readStream.readBits(lengthToRead);
+            while (decoding.size() >= lengthToRead) {
+                string bitsToDecode = decoding;
+                while (bitsToDecode.size() > lengthToRead) {
+                    res.push_back((short) golomb.decode(bitsToDecode, idx));
+                    bitsToDecode = bitsToDecode.substr(idx, bitsToDecode.size());
                 }
+                decoding = bitsToDecode;
+                decoding += readStream.readBits(lengthToRead);
+            }
+            while (idx > 0) {
+                res.push_back((short) golomb.decode(decoding, idx));
+                decoding = decoding.substr(idx, decoding.size());
+            }
+            for (unsigned long i = 1; i < res.size(); i++) {
+                res[i] = res[i] + res[i - 1];
             }
             SndfileHandle outFile {outPath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, 44100};
-            outFile.write(res.data(), (long) res.size());
+            outFile.writef(res.data(), (long) res.size() / channels);
         }
     }
 };

@@ -27,11 +27,11 @@ public:
     BitStream(string path) : BitStream(path, 0) {}
 
     char readBit() {
-        char res = -1;
         ifstream infile;
-        infile.open(path);
+        infile.open(path, ios::in | ios::binary);
         infile.seekg(bitPointer>>3); // bitPointer/8
-        if (infile >> res) {
+        char res = -1;
+        if (infile.read(&res, 1)) {
             res >>= 7 - (bitPointer % 8);
             res &= 1;
             bitPointer++;
@@ -48,7 +48,7 @@ public:
         for (unsigned int i = 0; i < n; i++) {
             infile.seekg(bitPointer>>3); // bitPointer/8
             char c = -1;
-            if (infile >> c) {
+            if (infile.read(&c, 1)) {
                 c >>= 7 - (bitPointer % 8);
                 c &= 1;
                 bitPointer++;

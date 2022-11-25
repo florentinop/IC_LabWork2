@@ -56,25 +56,42 @@ public:
         }
         sLength = q + 1;
         int b = (int) log2(m);
+        if ((unsigned long) q + 1 >= s.size()) {
+            sLength = 0;
+            return q * m;
+        }
         string bBits = s.substr(q + 1, b);
         int rPrime = stoi(bBits, nullptr, 2);
         int r = 0;
+        string signBit;
         if (rPrime < pow(2, b + 1) - m) {
             r = rPrime;
             sLength += b;
+            int value = q * m + r;
+            if (value == 0) {
+                return value;
+            }
+            if ((unsigned int) q + b + 1 >= s.size()) {
+                sLength = 0;
+                return q * m + r;
+            }
+            signBit = s.substr(q + b + 1, 1);
+            sLength++;
+            return value * (signBit == "0" ? 1 : -1);
         } else {
             string bBitsPlusOne = s.substr(q + 1, b + 1);
             rPrime = stoi(bBitsPlusOne, nullptr, 2);
             r = rPrime - (int) pow(2, b + 1) + m;
             sLength += b + 1;
+            if ((unsigned long) q + b + 2 >= s.size()) {
+                sLength = 0;
+                return q * m + r;
+            }
+            signBit = s.substr(q + b + 2, 1);
+            sLength++;
+            int value = q * m + r;
+            return value * (signBit == "0" ? 1 : -1);
         }
-        int value = q * m + r;
-        if (value == 0) {
-            return value;
-        }
-        string signBit = s.substr(q + b + 2, 1);
-        sLength += 1;
-        return value * (signBit == "0" ? 1 : -1);
     }
 };
 
