@@ -16,3 +16,6 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(audioCodec AudioCodec.cpp)
 target_link_libraries (audioCodec sndfile)
+
+add_executable (imageCodec ImageCodec.cpp)
+target_link_libraries(imageCodec ${OpenCV_LIBS})

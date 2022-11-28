@@ -4,7 +4,9 @@ To build:
 To test:
 	part2-bin/golomb -e 6 20 // encodes the golomb code for m=6, n=20
 	part2-bin/golomb -d 6 0001110 // decodes 0001110 and prints its corresponding n (for m=6)
-	part2-bin/audioCodec sample.wav new.wav // 
+	part2-bin/audioCodec --lossless sample.wav out.bin // encodes sample.wav into out.bin
+	part2-bin/audioCodec out.bin out.wav  // decodes out.bin 
+
 
 
 To clean:
