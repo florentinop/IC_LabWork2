@@ -76,7 +76,7 @@ public:
         }
     }
 
-    vector<unsigned char> decode(const string &outPath) {
+    void decode(const string &outPath) {
         Golomb golomb{32};
         BitStream readStream{path};
         int rows = stoi(readStream.readBits(16), nullptr, 2);
@@ -140,7 +140,6 @@ public:
             img.at<Vec3b>(i / colIdx, (i % colIdx) / 3) = Vec3b(res[i], res[i + 1], res[i + 2]);
         }
         imwrite(outPath, img);
-        return res;
     }
 };
 
