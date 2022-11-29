@@ -25,7 +25,10 @@ public:
     }
 
     void losslessEncode(vector<short> samples, int channels) {
-        vector<short> res(samples.size(), 0);
+        if (samples.empty())
+            return;
+        vector<short> res(samples.size());
+        res[0] = samples[0];
         for (unsigned int i = 1; i < samples.size(); i++) {
             res[i] = samples[i] - samples[i - 1];
         }
@@ -93,6 +96,9 @@ public:
                 res.push_back((short) golomb.decode(decoding, idx));
                 decoding = decoding.substr(idx, decoding.size());
             }
+            if (res.size() % 2 != 0) {
+                res.pop_back();
+            }
             for (unsigned long i = 1; i < res.size(); i++) {
                 res[i] = res[i] + res[i - 1];
             }
@@ -101,6 +107,5 @@ public:
         }
     }
 };
-
 
 #endif //INC_02_AUDIOCODEC_H
