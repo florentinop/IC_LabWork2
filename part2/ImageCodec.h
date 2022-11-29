@@ -30,7 +30,7 @@ public:
 
     void encode(Mat img)
     {
-        vector<Vec3b> res(img.rows * img.cols);
+        vector<Vec3b> res;
         for (int i = 0; i < img.cols; i++){
             res.push_back(Vec3b(0,0,0));
         }
@@ -61,6 +61,7 @@ public:
                 res.push_back(x);
             }
         }
+    
         Golomb golomb{32};
         BitStream writeStream{path};
         writeStream.writeBits(bitset <16> (img.rows).to_string());
@@ -107,17 +108,15 @@ public:
             res.push_back((unsigned char) golomb.decode(decoding, idx));
             decoding = decoding.substr(idx, decoding.size());
         }
-
-
+        
         int c=0;
         int r=0;
         for (size_t i = 0; i < res.size(); i+=3){
             if(c == img.cols)
                 c=0,r++;
-            // cout << res.size() << '\t' << c <<Vec3b(res[i],res[i+1],res[i+2]) << '\n';
             img.at<Vec3b>(r, c++) = Vec3b(res[i],res[i+1],res[i+2]);
         }
-
+       
         imwrite(outPath, img);
     }
 };

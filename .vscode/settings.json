@@ -35,5 +35,7 @@
         "tuple": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp"
-    }
+    },
+    "nrf-connect.topdir": "${nrf-connect.sdk:2.0.1}",
+    "nrf-connect.toolchain.path": "PATH"
 }
