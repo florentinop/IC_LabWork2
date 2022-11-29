@@ -29,8 +29,9 @@ public:
             return;
         vector<short> res(samples.size());
         res[0] = samples[0];
-        for (unsigned int i = 1; i < samples.size(); i++) {
-            res[i] = samples[i] - samples[i - 1];
+        res[1] = samples[1];
+        for (unsigned int i = channels; i < samples.size(); i++) {
+            res[i] = samples[i] - samples[i - channels];
         }
         int max = *max_element(res.begin(), res.end());
         int m = (int) (max / log2(max));
@@ -92,15 +93,15 @@ public:
                 decoding = bitsToDecode;
                 decoding += readStream.readBits(lengthToRead);
             }
-            while (idx > 0) {
+            while (idx < (int) decoding.size() && idx != -1) {
                 res.push_back((short) golomb.decode(decoding, idx));
                 decoding = decoding.substr(idx, decoding.size());
             }
             if (res.size() % 2 != 0) {
                 res.pop_back();
             }
-            for (unsigned long i = 1; i < res.size(); i++) {
-                res[i] = res[i] + res[i - 1];
+            for (unsigned long i = channels; i < res.size(); i++) {
+                res[i] = res[i] + res[i - channels];
             }
             SndfileHandle outFile {outPath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, 44100};
             outFile.writef(res.data(), (long) res.size() / channels);
