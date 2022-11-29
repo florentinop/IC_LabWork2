@@ -108,11 +108,14 @@ public:
             decoding = decoding.substr(idx, decoding.size());
         }
 
-        cout << "aaaaaaaaaaaaaaaaaaaaaaa";
-        exit(-1);
-        
+
+        int c=0;
+        int r=0;
         for (size_t i = 0; i < res.size(); i+=3){
-            img.at<Vec3b>(i/img.rows, i%img.cols) = Vec3b(i,i+1,i+2);
+            if(c == img.cols)
+                c=0,r++;
+            // cout << res.size() << '\t' << c <<Vec3b(res[i],res[i+1],res[i+2]) << '\n';
+            img.at<Vec3b>(r, c++) = Vec3b(res[i],res[i+1],res[i+2]);
         }
 
         imwrite(outPath, img);
