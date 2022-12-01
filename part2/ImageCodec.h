@@ -95,7 +95,7 @@ public:
             decoding = bitsToDecode;
             decoding += readStream.readBits(BLOCK_SIZE);
         }
-        while (idx < (int) decoding.size()) {
+        while (idx < (int) decoding.size() && idx > 0) {
             res.push_back((unsigned char) golomb.decode(decoding, idx));
             decoding = decoding.substr(idx, decoding.size());
         }
