@@ -8,8 +8,7 @@ To test:
 	part2-bin/audioCodec out.bin out.wav  // decodes out.bin into out.wav
 	part2-bin/imageCodec -e images/house.ppm out.bin  // encodes house.ppm into out.bin
 	part2-bin/imageCodec out.bin new_house.ppm  // decodes out.bin into new_house.ppm 	 
-
-
+	part2-bin/imageCodec -snr images/house.ppm new_house.ppm  // computes SNR between house.ppm and new_house.ppm
 
 To clean:
 	make clean													

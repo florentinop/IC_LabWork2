@@ -18,6 +18,12 @@
 using namespace cv;
 using namespace std;
 
+std::vector<short> noise;
+
+double NoiseEnergy;
+double SignalEnergy;
+double SNR;
+
 class ImageCodec {
 private:
     string path;
@@ -26,6 +32,48 @@ public:
     explicit ImageCodec(string path) {
         this->path = std::move(path);
     }
+
+    void computeNoise(Mat og, Mat mod) {
+		for (int row = 1; row < og.rows; row++) {
+            for (int col = 0; col < og.cols; col++) {
+                Vec3b og_px = og.at<Vec3b>(row,col);
+                Vec3b mod_px = mod.at<Vec3b>(row,col);
+                for(size_t i = 0; i < 3; i++){
+                    noise.push_back(og_px[i] - mod_px[i]);
+                }
+            }
+        }
+			
+	}
+
+    void computeSignalEnergy(Mat og){
+        for (int row = 1; row < og.rows; row++) {
+            for (int col = 0; col < og.cols; col++) {
+                Vec3b px = og.at<Vec3b>(row,col);
+                for(size_t i = 0; i < 3; i++)
+                    SignalEnergy += pow(abs(px[i]),2);
+            }
+        }
+    }
+
+    void computeNoiseEnergy(){
+        for(short n : noise)
+			NoiseEnergy += pow(abs(n),2);
+    }
+
+    double computeSNR(Mat og, Mat mod) {
+		computeNoise(og, mod);
+        computeSignalEnergy(og);
+		computeNoiseEnergy();
+		
+        // std::cout  << "Signal Energy: " << SignalEnergy << "\tNoise Energy: " << NoiseEnergy << '\n';
+
+		if(NoiseEnergy==0)
+			return 0;
+
+		return 10*log10(SignalEnergy/NoiseEnergy);
+		
+	}
 
     void encode(Mat img) {
         vector<Vec3b> res;
@@ -69,6 +117,7 @@ public:
         BitStream writeStream{path};
         writeStream.writeBits(bitset<16>(img.rows).to_string());
         writeStream.writeBits(bitset<16>(img.cols).to_string());
+        
         for (auto re : res) {
             for (int i = 0; i < 3; i++) {
                 writeStream.writeBits(golomb.encode(re[i]));

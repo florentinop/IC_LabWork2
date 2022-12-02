@@ -1,7 +1,0 @@
-/home/rt/Desktop/IC_LabWork2/part1/build/CMakeFiles/copy.dir
-/home/rt/Desktop/IC_LabWork2/part1/build/CMakeFiles/negative.dir
-/home/rt/Desktop/IC_LabWork2/part1/build/CMakeFiles/mirror.dir
-/home/rt/Desktop/IC_LabWork2/part1/build/CMakeFiles/rotate.dir
-/home/rt/Desktop/IC_LabWork2/part1/build/CMakeFiles/changeIntensity.dir
-/home/rt/Desktop/IC_LabWork2/part1/build/CMakeFiles/edit_cache.dir
-/home/rt/Desktop/IC_LabWork2/part1/build/CMakeFiles/rebuild_cache.dir
