@@ -1,7 +1,3 @@
-//
-// Created by diogo on 14/11/22.
-//
-
 #ifndef INC_02_AUDIOCODEC_H
 #define INC_02_AUDIOCODEC_H
 
@@ -95,10 +91,11 @@ public:
                 decoding = bitsToDecode;
                 decoding += readStream.readBits(lengthToRead);
             }
-            while (idx < (int) decoding.size() && idx != -1) {
+            while (idx < (int) decoding.size() && idx > 0) {
                 res.push_back((short) golomb.decode(decoding, idx));
                 decoding = decoding.substr(idx, decoding.size());
             }
+            res.push_back((short) golomb.decode(decoding, idx));
             if (res.size() % 2 != 0) {
                 res.pop_back();
             }
