@@ -1,4 +1,4 @@
-#LabWork2
+#LabWork2 INFORMAÇÃO E CODIFICAÇÃO
 
 DIOGO SANTOS, 98393
 
