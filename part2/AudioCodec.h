@@ -1,7 +1,3 @@
-//
-// Created by diogo on 14/11/22.
-//
-
 #ifndef INC_02_AUDIOCODEC_H
 #define INC_02_AUDIOCODEC_H
 
@@ -42,6 +38,7 @@ public:
         for (auto re: res) {
             writeStream.writeBits(golomb.encode(re));
         }
+        cout << res.size() << endl;
     }
 
     void lossyEncode(vector<short> samples, int channels) {
@@ -64,7 +61,7 @@ public:
         }
     }
 
-    void decode(const string& outPath) {
+    vector<short> decode(const string& outPath) {
         BitStream readStream {path};
         int channels = (readStream.readBit() == '1' ? 2 : 1);
         int m = stoi(readStream.readBits(15), nullptr, 2);
@@ -93,10 +90,11 @@ public:
                 decoding = bitsToDecode;
                 decoding += readStream.readBits(lengthToRead);
             }
-            while (idx < (int) decoding.size() && idx != -1) {
+            while (idx < (int) decoding.size() && idx > 0) {
                 res.push_back((short) golomb.decode(decoding, idx));
                 decoding = decoding.substr(idx, decoding.size());
             }
+            res.push_back((short) golomb.decode(decoding, idx));
             if (res.size() % 2 != 0) {
                 res.pop_back();
             }
@@ -106,6 +104,7 @@ public:
             SndfileHandle outFile {outPath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, 44100};
             outFile.writef(res.data(), (long) res.size() / channels);
         }
+        return res;
     }
 };
 
