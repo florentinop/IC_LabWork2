@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
         size_t nFrames;
         vector<short> samples(FRAMES_BUFFER_SIZE * sndFile.channels());
 
-        vector<short> temp(samples.size());
+        vector<short> temp;
 
         while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
             samples.resize(nFrames * sndFile.channels());

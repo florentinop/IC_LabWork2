@@ -42,6 +42,8 @@ public:
         for (auto re: res) {
             writeStream.writeBits(golomb.encode(re));
         }
+
+        
     }
 
     void lossyEncode(vector<short> samples, int channels) {
@@ -103,6 +105,7 @@ public:
             for (unsigned long i = channels; i < res.size(); i++) {
                 res[i] = res[i] + res[i - channels];
             }
+            
             SndfileHandle outFile {outPath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, 44100};
             outFile.writef(res.data(), (long) res.size() / channels);
         }
